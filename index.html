@@ -1141,7 +1141,7 @@
 <script type="module">
 import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/+esm';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://objectid-pro.onrender.com';
 let productPhotos = { main: null, angle1: null, angle2: null, angle3: null };
 
 // -------------------- Init --------------------
@@ -1395,7 +1395,7 @@ function initCameraCapture() {
 // -------------------- Fetch Product by Code --------------------
 async function fetchProductByCode(productId) {
     try {
-        const res = await fetch(`http://127.0.0.1:8000/products/${productId}`);
+        const res = await fetch(`${API_BASE}/products/${productId}`);
         if (!res.ok) throw new Error("Product not found");
         const product = await res.json();
         console.log("Product fetched:", product);
