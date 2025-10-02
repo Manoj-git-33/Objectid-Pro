@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pymongo
+pillow
+qrcode
+python-barcode
+python-multipart
