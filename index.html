@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Identification & Tagging System | US Inventory Management</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- QR / Barcode Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+    <!-- Live QR Scanner -->
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --gray: #95a5a6;
+            --white: #ffffff;
+            --header-gradient: linear-gradient(135deg, #2c3e50 0%, #4a6580 100%);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: var(--header-gradient);
+            color: var(--white);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-bottom: 4px solid var(--secondary);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--secondary);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .logo-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .dashboard-title {
+            margin: 30px 0 20px;
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            border-left: 5px solid var(--secondary);
+            padding-left: 15px;
+        }
+
+        .dashboard-subtitle {
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            border-top: 5px solid var(--secondary);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+            color: var(--secondary);
+            background: rgba(52, 152, 219, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
+            background: #f9f9f9;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Button Styles */
+        button {
+            background: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--success);
+        }
+
+        .btn-secondary:hover {
+            background: #219653;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .btn-outline:hover {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        /* Photo Grid Styles */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            height: 180px;
+            background: #f1f1f1;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px dashed var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .photo-item:hover {
+            border-color: var(--secondary);
+            background: #e9f5fe;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+        }
+
+        .photo-item .photo-placeholder i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .photo-item .photo-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--secondary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .photo-item:hover .remove-photo {
+            opacity: 1;
+        }
+
+        .photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Scanner Styles */
+        #scanner-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #scanning-line {
+            position: absolute;
+            height: 3px;
+            width: 100%;
+            background: var(--secondary);
+            top: 50%;
+            animation: scan 2s linear infinite;
+            box-shadow: 0 0 10px var(--secondary);
+        }
+
+        @keyframes scan {
+            0% { top: 10%; }
+            50% { top: 90%; }
+            100% { top: 10%; }
+        }
+
+        /* Code Display */
+        .code-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            gap: 20px;
+        }
+
+        .code-item {
+            text-align: center;
+            flex: 1;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .code-item canvas {
+            max-width: 100%;
+            border: 1px solid #eee;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        /* Object Details */
+        .object-details {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            display: none;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .object-image {
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+            display: flex;
+        }
+
+        .detail-item strong {
+            display: inline-block;
+            width: 140px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .photo-grid img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .photo-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        #lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            color: var(--gray);
+            background: var(--primary);
+            border-top: 5px solid var(--secondary);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+        }
+
+        .status-inactive {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent);
+        }
+
+        /* File Upload */
+        .file-upload {
+            display: none;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .code-display {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Color Options */
+        .color-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: var(--transition);
+        }
+        
+        .color-option.selected {
+            border-color: var(--secondary);
+            transform: scale(1.1);
+        }
+        
+        /* Form Columns */
+        .form-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Add these styles to your existing CSS */
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 300px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #F44336;
+}
+
+.notification button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 15px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* Table styles for inventory and history */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.data-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Scanned product details */
+.scanned-product {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.scanned-product-image {
+    flex: 0 0 200px;
+}
+
+.scanned-product-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.scanned-product-details {
+    flex: 1;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.detail-row label {
+    font-weight: 600;
+    min-width: 100px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .scanned-product {
+        flex-direction: column;
+    }
+    
+    .scanned-product-image {
+        flex: none;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+    }
+    
+    .detail-row label {
+        margin-bottom: 5px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-qrcode logo-icon"></i>
+                <div>
+                    <div class="logo-text">ObjectID Pro</div>
+                    <div class="logo-subtitle">US Inventory Management System</div>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#"><i class="fas fa-database"></i> Inventory</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> History</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="dashboard-title">Object Identification & Tagging System</h1>
+        <p class="dashboard-subtitle">Advanced QR code and barcode management for US businesses</p>
+
+        <div class="main-content">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Capture Product Images Card -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-camera"></i> Capture Product Images</h2>
+                    <p style="margin-bottom: 15px;">Add multiple photos from different angles for better product identification</p>
+                    
+                    <div class="photo-grid" id="photo-grid">
+                        <div class="photo-item" id="photo-main">
+                            <div class="photo-number">1</div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <span>Main Photo</span>
+                            </div>
+                            <div class="photo-caption">Front view</div>
+                        </div>
+                        <div class="photo-item" id="photo-angle-1">
+                            <div class="photo-number">2</div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>Side View</span>
+                            </div>
+                            <div class="photo-caption">Left/right side</div>
+                        </div>
+                        <div class="photo-item" id="photo-angle-2">
+                            <div class="photo-number">3</div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>Top View</span>
+                            </div>
+                            <div class="photo-caption">From above</div>
+                        </div>
+                        <div class="photo-item" id="photo-angle-3">
+                            <div class="photo-number">4</div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>Detail View</span>
+                            </div>
+                            <div class="photo-caption">Close-up</div>
+                        </div>
+                    </div>
+                    
+                    <input type="file" id="file-upload" class="file-upload" accept="image/*" multiple>
+                    
+                    <div class="actions">
+                        <button id="upload-btn" class="btn-outline"><i class="fas fa-upload"></i> Upload Images</button>
+                        <button id="capture-btn"><i class="fas fa-camera"></i> Capture Images</button>
+                    </div>
+                </div>
+
+                <!-- Product Details Card -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-info-circle"></i> Product Details</h2>
+                    <div class="form-group">
+                        <label for="object-name">Product Name</label>
+                        <input type="text" id="object-name" placeholder="Enter product name">
+                    </div>
+                    <div class="form-columns">
+                        <div class="form-group">
+                            <label for="object-category">Category</label>
+                            <select id="object-category">
+                                <option value="">Select a category</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="books">Books</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="tools">Tools & Equipment</option>
+                                <option value="office">Office Supplies</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="object-subcategory">Type</label>
+                            <select id="object-subcategory">
+                                <option value="">Select type</option>
+                                <option value="sneakers">Sneakers</option>
+                                <option value="boots">Boots</option>
+                                <option value="sandals">Sandals</option>
+                                <option value="flipflops">Flip Flops</option>
+                                <option value="formals">Formal Shoes</option>
+                                <option value="slippers">Slippers</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-columns">
+                        <div class="form-group">
+                            <label for="object-audience">Audience</label>
+                            <select id="object-audience">
+                                <option value="">Select audience</option>
+                                <option value="men">Men</option>
+                                <option value="women">Women</option>
+                                <option value="children">Children</option>
+                                <option value="unisex">Unisex</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="object-closure">Closure Type</label>
+                            <select id="object-closure">
+                                <option value="">Select closure type</option>
+                                <option value="lace">Lace-up</option>
+                                <option value="velcro">Velcro</option>
+                                <option value="buckle">Buckle</option>
+                                <option value="zipper">Zipper</option>
+                                <option value="slipon">Slip-on</option>
+                                <option value="elastic">Elastic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <div class="color-options">
+                            <div class="color-option selected" style="background-color: #000000;" data-color="Black"></div>
+                            <div class="color-option" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="White"></div>
+                            <div class="color-option" style="background-color: #ff0000;" data-color="Red"></div>
+                            <div class="color-option" style="background-color: #0000ff;" data-color="Blue"></div>
+                            <div class="color-option" style="background-color: #008000;" data-color="Green"></div>
+                            <div class="color-option" style="background-color: #ffff00;" data-color="Yellow"></div>
+                            <div class="color-option" style="background-color: #ffa500;" data-color="Orange"></div>
+                            <div class="color-option" style="background-color: #800080;" data-color="Purple"></div>
+                            <div class="color-option" style="background-color: #ffc0cb;" data-color="Pink"></div>
+                            <div class="color-option" style="background-color: #a52a2a;" data-color="Brown"></div>
+                            <div class="color-option" style="background-color: #808080;" data-color="Gray"></div>
+                            <div class="color-option" style="background-color: #ffffff; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;" data-color="Multicolor"><i class="fas fa-palette"></i></div>
+                        </div>
+                        <input type="hidden" id="object-color" value="Black">
+                    </div>
+                    <div class="form-group">
+                        <label for="object-description">Description & Specifications</label>
+                        <textarea id="object-description" placeholder="Enter product description and specifications"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="object-location">Storage Location</label>
+                        <input type="text" id="object-location" placeholder="e.g., Warehouse A, Shelf 4B">
+                    </div>
+                    <div class="form-group">
+                        <label for="object-price">Price ($)</label>
+                        <input type="number" step="0.01" id="object-price" placeholder="Enter product price">
+                    </div>
+                    <button type="button" id="generate-btn" class="btn-secondary">
+                        <i class="fas fa-qrcode"></i> Generate Identification Codes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Scanner Card -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-search"></i> Scan Code <span class="status-indicator status-active" id="scanner-status">Scanner Ready</span></h2>
+                    <div id="scanner-container">
+                        <video id="video" width="100%" height="240" autoplay></video>
+                        <canvas id="canvas" hidden></canvas>
+                        <div id="scanning-line"></div>
+                    </div>
+                    <p>Or upload an image:</p>
+                    <div class="actions">
+                        <button id="upload-scan-btn" class="btn-outline"><i class="fas fa-upload"></i> Upload QR/Barcode</button>
+                        <button id="start-scan-btn"><i class="fas fa-play"></i> Start Scanner</button>
+                        <button id="stop-scan-btn" style="display: none;"><i class="fas fa-stop"></i> Stop Scanner</button>
+                    </div>
+                </div>
+
+                <!-- Generated Codes Card -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-barcode"></i> Generated Codes</h2>
+                    <div class="code-display">
+                        <div class="code-item">
+                            <p>QR Code</p>
+                            <canvas id="qrcode"></canvas>
+                        </div>
+                        <div class="code-item">
+                            <p>Barcode</p>
+                            <canvas id="barcode"></canvas>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button id="print-btn"><i class="fas fa-print"></i> Print Codes</button>
+                        <button id="save-btn"><i class="fas fa-download"></i> Save Codes</button>
+                    </div>
+                </div>
+
+                <!-- Product Information Card (Updated Version) -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-box"></i> Product Information</h2>
+                    <div class="object-details" id="object-details">
+                        <!-- Product Images Grid -->
+                        <div class="photo-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                            <div class="photo-item">
+                                <img src="" id="detail-image" alt="Main view" class="object-image">
+                                <div class="photo-caption">Front view</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="" id="detail-image-2" alt="Side view" class="object-image">
+                                <div class="photo-caption">Side view</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="" id="detail-image-3" alt="Top view" class="object-image">
+                                <div class="photo-caption">Top view</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="" id="detail-image-4" alt="Detail view" class="object-image">
+                                <div class="photo-caption">Close-up</div>
+                            </div>
+                        </div>
+                        <!-- Product Details Table -->
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <th>ID</th>
+                                    <td id="detail-id">OBJ-0001</td>
+                                </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <td id="detail-name">Sample Product</td>
+                                </tr>
+                                <tr>
+                                    <th>Category</th>
+                                    <td id="detail-category">Electronics</td>
+                                </tr>
+                                <tr>
+                                    <th>Type</th>
+                                    <td id="detail-type">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Audience</th>
+                                    <td id="detail-audience">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Closure</th>
+                                    <td id="detail-closure">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Color</th>
+                                    <td id="detail-color">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                    <td id="detail-description">This is a sample description of the product.</td>
+                                </tr>
+                                <tr>
+                                    <th>Location</th>
+                                    <td id="detail-location">Main Warehouse</td>
+                                </tr>
+                                <tr>
+                                    <th>Price</th>
+                                    <td id="detail-price">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <th>Date Added</th>
+                                    <td id="detail-date">October 15, 2023</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Product Action Buttons -->
+                        <div class="product-actions" style="margin: 10px 0; display: flex; gap: 10px;">
+                            <button id="edit-product-btn" class="action-btn">✏️ Edit</button>
+                            <button id="delete-product-btn" class="action-btn">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:9999;">
+        <img id="lightbox-img" src="" style="max-width:90%; max-height:90%; border-radius:8px;">
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">ObjectID Pro</div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Support</a>
+                <a href="#">About Us</a>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2023 Object Identification & Tagging System. All rights reserved. | US Patent Pending
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+<script type="module">
+import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/+esm';
+
+const API_BASE = 'http://127.0.0.1:8000';
+let productPhotos = { main: null, angle1: null, angle2: null, angle3: null };
+
+// -------------------- Init --------------------
+document.addEventListener('DOMContentLoaded', () => {
+    initPhotoHandlers();
+    initColorSelection();
+    initFormHandlers();
+    initCameraCapture();
+    initScanner();
+});
+
+// -------------------- Photo Handlers --------------------
+function initPhotoHandlers() {
+    const photoItems = document.querySelectorAll('.photo-item');
+    photoItems.forEach((item, index) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+
+        const photoId = item.id;
+        item.addEventListener('click', e => {
+            if (!e.target.classList.contains('remove-photo')) input.click();
+        });
+        input.addEventListener('change', e => handlePhotoUpload(e, item, index, photoId));
+    });
+
+    const uploadBtn = document.getElementById('upload-btn');
+    const fileUpload = document.getElementById('file-upload');
+    if (uploadBtn && fileUpload) {
+        uploadBtn.addEventListener('click', () => fileUpload.click());
+        fileUpload.addEventListener('change', handleFileUpload);
+    }
+}
+
+function handlePhotoUpload(e, item, index, photoId) {
+    if (!e.target.files?.[0]) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const keyMap = { 'photo-main': 'main', 'photo-angle-1': 'angle1', 'photo-angle-2': 'angle2', 'photo-angle-3': 'angle3' };
+        const photoKey = keyMap[photoId];
+        if (!photoKey) return;
+
+        productPhotos[photoKey] = { dataUrl: ev.target.result, file: e.target.files[0] };
+        const caption = item.querySelector('.photo-caption')?.textContent || '';
+        item.innerHTML = `
+            <div class="photo-number">${index + 1}</div>
+            <img src="${ev.target.result}" alt="Product photo">
+            <div class="remove-photo">&times;</div>
+            <div class="photo-caption">${caption}</div>
+        `;
+        item.querySelector('.remove-photo')?.addEventListener('click', ev => {
+            ev.stopPropagation();
+            productPhotos[photoKey] = null;
+            resetPhotoItem(item, index, caption);
+        });
+    };
+    reader.readAsDataURL(e.target.files[0]);
+}
+
+function handleFileUpload(e) {
+    if (!e.target.files?.[0]) return;
+    const slot = Object.keys(productPhotos).find(k => !productPhotos[k]);
+    if (!slot) return alert('All photo slots are full. Remove a photo first.');
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const photoMap = { main: 'photo-main', angle1: 'photo-angle-1', angle2: 'photo-angle-2', angle3: 'photo-angle-3' };
+        const captionMap = { main: 'Front view', angle1: 'Left/Right', angle2: 'Top view', angle3: 'Close-up' };
+        const photoItem = document.getElementById(photoMap[slot]);
+        if (!photoItem) return;
+        const caption = captionMap[slot];
+        productPhotos[slot] = { dataUrl: ev.target.result, file: e.target.files[0] };
+        const index = Array.from(document.querySelectorAll('.photo-item')).indexOf(photoItem);
+        photoItem.innerHTML = `
+            <div class="photo-number">${index + 1}</div>
+            <img src="${ev.target.result}" alt="Product photo">
+            <div class="remove-photo">&times;</div>
+            <div class="photo-caption">${caption}</div>
+        `;
+        photoItem.querySelector('.remove-photo')?.addEventListener('click', ev => {
+            ev.stopPropagation();
+            productPhotos[slot] = null;
+            resetPhotoItem(photoItem, index, caption);
+        });
+    };
+    reader.readAsDataURL(e.target.files[0]);
+}
+
+function resetPhotoItem(item, index, caption) {
+    const placeholders = ["Main Photo", "Side View", "Top View", "Detail View"];
+    item.innerHTML = `
+        <div class="photo-number">${index + 1}</div>
+        <div class="photo-placeholder">
+            <i class="fas fa-${index === 0 ? 'camera' : 'plus'}"></i>
+            <span>${placeholders[index]}</span>
+        </div>
+        <div class="photo-caption">${caption}</div>
+    `;
+}
+
+// -------------------- Color Selection --------------------
+function initColorSelection() {
+    const colorOptions = document.querySelectorAll('.color-option');
+    const input = document.getElementById('object-color');
+    if (!colorOptions || !input) return;
+    colorOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            input.value = option.dataset.color || '';
+        });
+    });
+}
+
+/// -------------------- Form Submission --------------------
+function initFormHandlers() {
+    const generateBtn = document.getElementById('generate-btn');
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener('click', async (event) => {
+    event.preventDefault(); // prevent reload
+
+    const name = document.getElementById('object-name')?.value.trim();
+    if (!name) return alert('Product name required');
+
+    const formData = new FormData();
+    formData.append('name', name);
+
+    ['object-category','object-subcategory','object-audience','object-closure','object-color','object-description','object-location']
+        .forEach(f => {
+            const el = document.getElementById(f);
+            if (el?.value) formData.append(f.replace('object-',''), el.value);
+        });
+
+    const priceEl = document.getElementById('object-price');
+    if (priceEl?.value) formData.append('price', parseFloat(priceEl.value));
+
+    Object.keys(productPhotos).forEach(k => {
+        if (productPhotos[k]?.file) formData.append(k === 'main' ? 'main_image' : `${k}_image`, productPhotos[k].file);
+    });
+
+    try {
+        const res = await fetch(`${API_BASE}/products`, {
+            method: 'POST',
+            body: formData,
+            mode: 'cors'
+        });
+        if (res.ok) {
+            const product = await res.json();
+            displayProductDetails(product);
+
+            // Generate QR code
+            const qrCanvas = document.getElementById('qrcode');
+            qrCanvas.innerHTML = '';
+            QRCode.toCanvas(qrCanvas, product.product_id, { width: 200 });
+
+            // Generate Barcode
+            const barcodeCanvas = document.getElementById('barcode');
+            JsBarcode(barcodeCanvas, product.product_id, {
+                format: "CODE128",
+                width: 2,
+                height: 60,
+                displayValue: true
+            });
+
+        } else {
+            const err = await res.json();
+            alert(err.detail || 'Error creating product');
+        }
+    } catch (err) {
+        alert('Network error: ' + err.message);
+    }
+});
+}
+
+// -------------------- Camera Capture --------------------
+function initCameraCapture() {
+    const btn = document.getElementById("capture-btn");
+    const card = document.querySelector(".card");
+    if (!btn || !card) return;
+
+    let cameraStream = null;
+
+    btn.addEventListener("click", async () => {
+        if (cameraStream) return;
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.createElement("video");
+            video.autoplay = true;
+            video.srcObject = cameraStream;
+            video.style.width = "100%";
+            video.style.borderRadius = "8px";
+            video.style.marginTop = "10px";
+            card.appendChild(video);
+
+            const snapBtn = document.createElement("button");
+            snapBtn.textContent = "📸 Take Snapshot";
+            snapBtn.style.marginTop = "10px";
+            card.appendChild(snapBtn);
+
+            snapBtn.addEventListener("click", () => captureSnapshot(video, snapBtn));
+        } catch (err) {
+            alert("Camera access denied or unavailable: " + err.message);
+        }
+    });
+
+    function captureSnapshot(video, snapBtn) {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        canvas.toBlob(blob => {
+            const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+            const reader = new FileReader();
+            reader.onload = e => assignSnapshot(e.target.result, file);
+            reader.readAsDataURL(file);
+        }, "image/jpeg");
+
+        video.srcObject.getTracks().forEach(t => t.stop());
+        video.remove();
+        snapBtn.remove();
+    }
+
+    function assignSnapshot(dataUrl, file) {
+        const slot = Object.keys(productPhotos).find(k => !productPhotos[k]);
+        if (!slot) return alert("All photo slots are full!");
+        productPhotos[slot] = { dataUrl, file };
+
+        const photoMap = { main: 'photo-main', angle1: 'photo-angle-1', angle2: 'photo-angle-2', angle3: 'photo-angle-3' };
+        const captionMap = { main: 'Front view', angle1: 'Left/Right', angle2: 'Top view', angle3: 'Close-up' };
+        const photoItem = document.getElementById(photoMap[slot]);
+        if (!photoItem) return;
+        const caption = captionMap[slot];
+        const index = Array.from(document.querySelectorAll('.photo-item')).indexOf(photoItem);
+        photoItem.innerHTML = `
+            <div class="photo-number">${index + 1}</div>
+            <img src="${dataUrl}" alt="Product photo">
+            <div class="remove-photo">&times;</div>
+            <div class="photo-caption">${caption}</div>
+        `;
+        photoItem.querySelector('.remove-photo')?.addEventListener('click', ev => {
+            ev.stopPropagation();
+            productPhotos[slot] = null;
+            resetPhotoItem(photoItem, index, caption);
+        });
+    }
+}
+
+// -------------------- Fetch Product by Code --------------------
+async function fetchProductByCode(productId) {
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/products/${productId}`);
+        if (!res.ok) throw new Error("Product not found");
+        const product = await res.json();
+        console.log("Product fetched:", product);
+        displayProductDetails(product);  // call your display function
+    } catch (err) {
+        console.error("Error fetching product:", err);
+        alert("Could not fetch product data.");
+    }
+}
+
+// -------------------- QR / Barcode Scanner --------------------
+function initScanner() {
+    const codeReader = new BrowserMultiFormatReader();
+    const videoEl = document.getElementById('video');
+    const startBtn = document.getElementById('start-scan-btn');
+    const stopBtn = document.getElementById('stop-scan-btn');
+    const uploadBtn = document.getElementById('upload-scan-btn');
+    const uploadInput = document.createElement('input');
+    uploadInput.type = 'file';
+    uploadInput.accept = 'image/*';
+    uploadInput.style.display = 'none';
+    document.body.appendChild(uploadInput);
+
+    let stream = null;
+    let lastScanned = null;
+    let scanActive = false;
+
+    uploadBtn.addEventListener('click', () => uploadInput.click());
+    uploadInput.addEventListener('change', async e => {
+        if (!e.target.files?.[0]) return;
+        const img = new Image();
+        img.onload = async () => {
+            try {
+                const result = await codeReader.decodeFromImageElement(img);
+                if (result && result.text.trim() !== lastScanned) {
+                    lastScanned = result.text.trim();
+                    console.log("Decoded from uploaded image:", lastScanned);
+                    handleDecodedCode(lastScanned);
+                } else alert("No QR/Barcode detected in this image.");
+            } catch {
+                alert("Could not decode QR/Barcode from image.");
+            }
+        };
+        img.src = URL.createObjectURL(e.target.files[0]);
+    });
+
+    startBtn.addEventListener('click', async () => {
+        if (scanActive) return;
+        scanActive = true;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            videoEl.srcObject = stream;
+            await videoEl.play();
+
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+
+            codeReader.decodeFromVideoDevice(null, videoEl, (result, err) => {
+                if (result && result.text.trim() !== lastScanned) {
+                    lastScanned = result.text.trim();
+                    console.log("Decoded from camera:", lastScanned);
+
+                    // Call the handler for a successful scan
+                    handleDecodedCode(lastScanned);
+
+                    // Stop scanner immediately after decoding
+                    scanActive = false;
+                    if (stream) stream.getTracks().forEach(track => track.stop());
+                    videoEl.srcObject = null;
+                    codeReader.reset();
+                    startBtn.style.display = 'inline-block';
+                    stopBtn.style.display = 'none';
+                }
+                if (err && err.name !== 'NotFoundException') console.warn("Scan error:", err.message);
+            });
+        } catch (err) { 
+            alert('Camera not accessible: ' + err.message); 
+            scanActive = false;
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        scanActive = false;
+        lastScanned = null;
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        videoEl.srcObject = null;
+        codeReader.reset();
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+    });
+
+    function handleDecodedCode(code) {
+        alert(`Product scanned: ${code}`);
+        fetchProductByCode(code);  // Fetch and display product details
+        // Scroll to the product details section
+        const detailsSection = document.getElementById('object-details');
+        if (detailsSection) {
+            detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+// -------------------- Display Product details --------------------
+function displayProductDetails(product) {
+    const details = document.getElementById('object-details');
+    if (!details) return;
+
+    // Show the container
+    details.style.display = 'block';
+
+    const imageMap = {
+        'detail-image': product.images?.[0] || '',
+        'detail-image-2': product.images?.[1] || '',
+        'detail-image-3': product.images?.[2] || '',
+        'detail-image-4': product.images?.[3] || ''
+    };
+
+    Object.entries(imageMap).forEach(([id, src]) => {
+        const imgEl = details.querySelector(`#${id}`);
+        if (imgEl) imgEl.src = src;
+    });
+
+    const textMap = {
+        'detail-id': product.product_id,
+        'detail-name': product.name,
+        'detail-category': product.category,
+        'detail-type': product.subcategory,
+        'detail-audience': product.audience,
+        'detail-closure': product.closure,
+        'detail-color': product.color,
+        'detail-description': product.description,
+        'detail-location': product.location,
+        'detail-price': product.price != null ? `$${product.price}` : 'N/A',
+        'detail-date': product.created_at ? new Date(product.created_at).toLocaleString() : '-'
+    };
+
+    Object.entries(textMap).forEach(([id, value]) => {
+        const el = details.querySelector(`#${id}`);
+        if (el) el.textContent = value ?? '-';
+    });
+}
+
+// Lightbox gallery
+const lightbox = document.createElement('div');
+lightbox.id = 'lightbox';
+lightbox.style.display = 'none';
+lightbox.style.position = 'fixed';
+lightbox.style.top = '0';
+lightbox.style.left = '0';
+lightbox.style.width = '100%';
+lightbox.style.height = '100%';
+lightbox.style.background = 'rgba(0,0,0,0.85)';
+lightbox.style.justifyContent = 'center';
+lightbox.style.alignItems = 'center';
+lightbox.style.zIndex = '9999';
+document.body.appendChild(lightbox);
+
+const lbImg = document.createElement('img');
+lightbox.appendChild(lbImg);
+
+document.querySelectorAll('.photo-grid img').forEach((img, index, arr) => {
+    img.addEventListener('click', () => {
+        lbImg.src = img.src;
+        lightbox.style.display = 'flex';
+
+        // Optional: navigate with arrow keys
+        let current = index;
+
+        function keyHandler(e) {
+            if (e.key === 'ArrowRight') {
+                current = (current + 1) % arr.length;
+                lbImg.src = arr[current].src;
+            } else if (e.key === 'ArrowLeft') {
+                current = (current - 1 + arr.length) % arr.length;
+                lbImg.src = arr[current].src;
+            } else if (e.key === 'Escape') {
+                lightbox.style.display = 'none';
+                document.removeEventListener('keydown', keyHandler);
+            }
+        }
+
+        document.addEventListener('keydown', keyHandler);
+    });
+});
+
+lightbox.addEventListener('click', () => {
+    lightbox.style.display = 'none';
+});
+
+
+// -------------------- Product Action Buttons --------------------
+document.getElementById('edit-product-btn')?.addEventListener('click', () => {
+    const productId = document.getElementById('detail-id').textContent;
+    startEditingProduct(productId);
+});
+
+document.getElementById('delete-product-btn')?.addEventListener('click', async () => {
+    const productId = document.getElementById('detail-id').textContent;
+    if (!confirm(`Are you sure you want to delete product ${productId}?`)) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert('Product deleted successfully!');
+            // Clear product details view
+            document.getElementById('object-details').style.display = 'none';
+        } else {
+            const err = await res.json();
+            alert(err.detail || 'Error deleting product');
+        }
+    } catch (err) {
+        alert('Network error: ' + err.message);
+    }
+});
+</script>
+
+</body>
+</html>
